@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.polito.tdp.newufosightings.model.ArcoPeso;
 import it.polito.tdp.newufosightings.model.Sighting;
 import it.polito.tdp.newufosightings.model.State;
 
@@ -54,6 +55,42 @@ public class NewUfoSightingsDAO {
 						rs.getDouble("Lat"), rs.getDouble("Lng"), rs.getInt("Area"), rs.getInt("Population"),
 						rs.getString("Neighbors"));
 				result.add(state);
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}
+	
+	public List<ArcoPeso> getConnessioni(Integer anno, Integer giorni){
+		String sql = "select count(s1.id) as cnt, s1.state, s2.state " + 
+				"from sighting s1,sighting s2, neighbor n " + 
+				"where s1.state = n.state1 " + 
+				"and s2.state = n.state2 " + 
+				"and Year(s1.date_posted) = ? " + 
+				"and Year(s2.date_posted) = ? " + 
+				"and DATEDIFF(s1.datetime, s2.datetime)<= ? " + 
+				"group by s1.state, s2.state ";
+		
+		List<ArcoPeso> result = new ArrayList<>();
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, anno);
+			st.setInt(2, anno);
+			st.setInt(3, giorni);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				ArcoPeso ap = new ArcoPeso(rs.getString("s1.state"),
+						rs.getString("s2.state"),
+						rs.getInt("cnt"));
+				result.add(ap);
 			}
 
 			conn.close();

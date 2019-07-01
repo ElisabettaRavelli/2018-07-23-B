@@ -5,9 +5,11 @@
 package it.polito.tdp.newufosightings;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.newufosightings.model.Model;
+import it.polito.tdp.newufosightings.model.VerticePeso;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -48,7 +50,27 @@ public class NewUfoSightingsController {
 
 	@FXML
 	void doCreaGrafo(ActionEvent event) {
-
+		txtResult.clear();
+		try {
+		Integer anno = Integer.parseInt(txtAnno.getText());
+		if(anno<1906 || anno>2014) {
+			txtResult.appendText("Inserire un anno compreso tra il 1906 e il 2014\n");
+		}
+		Integer numGiorni = Integer.parseInt(txtxG.getText());
+		if(numGiorni<1 || numGiorni>180) {
+			txtResult.appendText("Inserire un numero di giorni tra 1 e 180\n");
+		}
+		this.model.creaGrafo(anno, numGiorni);
+		txtResult.appendText(String.format("Grafo creato di %d vertici e %d archi\n", this.model.getVertici(), this.model.getArchi()));
+		
+		List<VerticePeso> vp = this.model.sommaPesiAdiacenti();
+		for(VerticePeso tmp: vp) {
+			txtResult.appendText(String.format("Vertice %s e somma dei pesi adiacenti= %d \n", tmp.getState(), tmp.getSommaPesi()));
+		}
+		
+		}catch(NumberFormatException e){
+			txtResult.appendText("Inserire un numero di giorni e un anno\n");
+		}
 	}
 
 	@FXML
